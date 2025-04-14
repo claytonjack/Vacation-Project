@@ -10,6 +10,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Accommodation_PropertiesGetAndSet()
         {
+            //Act
             var accommodation = new Accommodation
             {
                 AccommodationID = 1,
@@ -18,7 +19,7 @@ namespace Vacation_API.Tests.Models
                 RoomType = "Deluxe",
                 ImageUrl = "/images/test.jpg"
             };
-
+            //Assert
             Assert.Equal(1, accommodation.AccommodationID);
             Assert.Equal("Test Hotel", accommodation.HotelName);
             Assert.Equal("123 Test St", accommodation.Address);
@@ -29,6 +30,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Accommodation_RequiredFieldsValidation()
         {
+            //Act
             var accommodation = new Accommodation();
             
             var validationContext = new ValidationContext(accommodation);
@@ -40,7 +42,7 @@ namespace Vacation_API.Tests.Models
             {
                 propertyNames.AddRange(validationResult.MemberNames);
             }
-            
+            //Assert
             Assert.Contains("HotelName", propertyNames);
             Assert.Contains("Address", propertyNames);
             Assert.Contains("RoomType", propertyNames);
@@ -49,8 +51,9 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Accommodation_VacationsCollectionInitialized()
         {
+            //Act
             var accommodation = new Accommodation();
-            
+            //Assert
             Assert.NotNull(accommodation.Vacations);
             Assert.Empty(accommodation.Vacations);
         }

@@ -11,7 +11,7 @@ namespace VacationBooking.Controllers
 {
     /// <summary>
     /// Controller for managing user accounts, authentication, and profile management.
-    /// Principal Author: Jack
+    /// Principal Author: Hillary
     /// </summary>
     public class AccountController : Controller
     {

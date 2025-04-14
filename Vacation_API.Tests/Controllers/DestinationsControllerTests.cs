@@ -68,6 +68,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal(2, destinations.Count());
         }
 
+        //destination with id test
         [Fact]
         public async Task GetDestination_WithValidId_ReturnsDestination()
         {
@@ -80,6 +81,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal("Paris", destination.City);
         }
 
+        //destination search test
         [Fact]
         public async Task SearchDestinations_WithValidQuery_ReturnsMatchingDestinations()
         {
@@ -93,6 +95,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal("London", destinations.First().City);
         }
 
+        //destination add test
         [Fact]
         public async Task PostDestination_WithValidModel_AddsDestination()
         {

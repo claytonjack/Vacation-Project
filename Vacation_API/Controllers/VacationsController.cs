@@ -10,7 +10,7 @@ namespace VacationBooking.Controllers
 {
     /// <summary>
     /// Controller for managing vacation package operations in the vacation booking system.
-    /// Principal Author: Hillary
+    /// Principal Author: Jack
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]

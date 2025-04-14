@@ -104,6 +104,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal(2, vacations.Count());
         }
 
+        //search vaction test
         [Fact]
         public async Task SearchVacations_WithMultipleFilters_ReturnsFilteredResults()
         {
@@ -124,6 +125,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal("Paris Budget", vacations.First().Name);
         }
 
+        //filter test
         [Fact]
         public async Task GetFilterOptions_ReturnsFilterOptions()
         {

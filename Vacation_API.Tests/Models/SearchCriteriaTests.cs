@@ -5,6 +5,7 @@ namespace Vacation_API.Tests.Models
 {
     public class SearchCriteriaTests
     {
+        //search criteria test
         [Fact]
         public void SearchCriteria_PropertiesGetAndSet()
         {
@@ -27,8 +28,9 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void SearchCriteria_PropertiesAreOptional()
         {
+            //act
             var criteria = new SearchCriteria();
-            
+            //assert
             Assert.NotNull(criteria);
             Assert.Null(criteria.City);
             Assert.Null(criteria.Country);

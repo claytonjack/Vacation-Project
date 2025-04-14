@@ -37,6 +37,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.Equal("Late checkout requested", booking.SpecialRequests);
         }
 
+        //booking with current time test
         [Fact]
         public void BookingDateDefaultsToCurrentTime()
         {

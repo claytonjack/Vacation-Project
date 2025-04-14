@@ -117,6 +117,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal(2, users.Count());
         }
 
+        //user with id test
         [Fact]
         public async Task GetUser_WithValidId_ReturnsUser()
         {
@@ -129,6 +130,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal("user1@example.com", user.Email);
         }
 
+        //user booking with id test
         [Fact]
         public async Task GetUserBookings_WithValidId_ReturnsUserBookings()
         {
@@ -141,6 +143,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Single(bookings);
         }
 
+        //create user test
         [Fact]
         public async Task PostUser_WithValidModel_CreatesUser()
         {
@@ -174,6 +177,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.IsType<NotFoundResult>(actionResult.Result);
         }
 
+        //no password test
         [Fact]
         public async Task PostUser_WithoutPassword_ReturnsBadRequest()
         {
@@ -194,6 +198,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.IsType<BadRequestObjectResult>(actionResult.Result);
         }
 
+        //user delete test
         [Fact]
         public async Task DeleteUser_WithBookings_ReturnsBadRequest()
         {

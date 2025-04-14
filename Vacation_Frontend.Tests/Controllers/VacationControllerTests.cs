@@ -36,6 +36,7 @@ namespace Vacation_Frontend.Tests.Controllers
             _controller = new VacationController(_apiService);
         }
 
+        //search of view test
         [Fact]
         public void Search_ReturnsViewWithSearchCriteria()
         {
@@ -46,6 +47,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.NotNull(model);
         }
 
+        //results of view test
         [Fact]
         public async Task Results_ReturnsViewWithSearchResults()
         {
@@ -88,6 +90,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.Equal(criteria, result.ViewData["SearchCriteria"]);
         }
 
+        //vaction detail with id test
         [Fact]
         public async Task Details_WithValidId_ReturnsViewWithVacation()
         {
@@ -125,6 +128,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.Equal("London City Break", model.Name);
         }
 
+        //vaction with invalid id test
         [Fact]
         public async Task Details_WithInvalidId_ReturnsNotFound()
         {

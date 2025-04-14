@@ -5,6 +5,7 @@ namespace Vacation_Frontend.Tests.Models
 {
     public class AccommodationTests
     {
+        //properties test
         [Fact]
         public void CanSetAndGetProperties()
         {
@@ -26,6 +27,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.Equal("/images/test.jpg", accommodation.ImageUrl);
         }
 
+        //vacation collection test
         [Fact]
         public void VacationsCollectionIsInitialized()
         {

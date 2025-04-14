@@ -11,7 +11,7 @@ namespace VacationBooking.Controllers
 {
     /// <summary>
     /// Controller for the main home page and general website navigation.
-    /// Principal Author: Mostafa
+    /// Principal Author: Jack
     /// </summary>
     public class HomeController : Controller
     {

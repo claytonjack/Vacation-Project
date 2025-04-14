@@ -24,6 +24,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.Equal("/images/paris.jpg", destination.ImageUrl);
         }
 
+        //collection of vaction test
         [Fact]
         public void VacationsCollectionIsInitialized()
         {

@@ -37,6 +37,7 @@ namespace Vacation_Frontend.Tests.Controllers
             _controller = new HomeController(_apiService);
         }
 
+        //list of vaction test
         [Fact]
         public async Task Index_ReturnsViewWithVacations()
         {
@@ -81,6 +82,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.NotNull(result);
         }
 
+        //error of view test
         [Fact]
         public void Error_ReturnsViewWithErrorViewModel()
         {

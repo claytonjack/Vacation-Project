@@ -56,6 +56,7 @@ namespace Vacation_Frontend.Tests.Controllers
             _controller = new AdminController(_apiService, _mockUserManager.Object);
         }
 
+        //admin user test
         [Fact]
         public async Task Dashboard_AdminUser_ReturnsViewWithVacations()
         {
@@ -92,6 +93,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.Equal("Paris Romantic Escape", model[1].Name);
         }
 
+        //admin create test
         [Fact]
         public async Task Create_AdminUser_ReturnsViewWithData()
         {
