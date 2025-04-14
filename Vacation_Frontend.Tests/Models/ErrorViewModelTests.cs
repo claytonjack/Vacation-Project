@@ -18,6 +18,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.Equal("TEST-123", errorViewModel.RequestId);
         }
 
+        //request id test
         [Fact]
         public void ShowRequestIdReturnsTrueWhenRequestIdIsSet()
         {
@@ -31,6 +32,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.True(errorViewModel.ShowRequestId);
         }
 
+        //id empty test
         [Fact]
         public void ShowRequestIdReturnsFalseWhenRequestIdIsEmpty()
         {
@@ -44,6 +46,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.False(errorViewModel.ShowRequestId);
         }
 
+        //id null test
         [Fact]
         public void ShowRequestIdReturnsFalseWhenRequestIdIsNull()
         {

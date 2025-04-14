@@ -55,6 +55,7 @@ namespace Vacation_Frontend.Tests.Controllers
             _controller = new BookingController(_apiService, _mockUserManager.Object);
         }
 
+        //bookinng with id test
         [Fact]
         public async Task NewBooking_WithValidId_ReturnsViewWithBooking()
         {
@@ -94,6 +95,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.Equal("London City Break", model.Vacation.Name);
         }
 
+        //confirmation of booking test
         [Fact]
         public async Task NewBookingPost_WithValidData_RedirectsToConfirmation()
         {
@@ -162,6 +164,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.Equal(booking.BookingID, result.RouteValues["id"]);
         }
 
+        //connfirmation of id test
         [Fact]
         public async Task Confirmation_WithValidId_ReturnsViewWithBooking()
         {

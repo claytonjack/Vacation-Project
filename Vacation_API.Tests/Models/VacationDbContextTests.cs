@@ -10,12 +10,13 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void DbContext_SetsAreCreated()
         {
+            //act
             var options = new DbContextOptionsBuilder<VacationDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDbContext")
                 .Options;
                 
             using var context = new VacationDbContext(options);
-            
+            //asert
             Assert.NotNull(context.Vacations);
             Assert.NotNull(context.Destinations);
             Assert.NotNull(context.Accommodations);
@@ -26,6 +27,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void DbContext_RelationshipsAreConfigured()
         {
+            //act
             var options = new DbContextOptionsBuilder<VacationDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestRelationships")
                 .Options;
@@ -59,7 +61,7 @@ namespace Vacation_API.Tests.Models
                     .Include(v => v.Destination)
                     .Include(v => v.Accommodation)
                     .FirstOrDefault();
-                    
+                //asert    
                 Assert.NotNull(vacation);
                 Assert.NotNull(vacation.Destination);
                 Assert.NotNull(vacation.Accommodation);

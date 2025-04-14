@@ -7,9 +7,11 @@ namespace Vacation_API.Tests.Models
 {
     public class UserTests
     {
+        //user test
         [Fact]
         public void User_PropertiesGetAndSet()
         {
+            //act
             var user = new User
             {
                 Id = "user-123",
@@ -21,7 +23,7 @@ namespace Vacation_API.Tests.Models
                 Password = "Password123!",
                 IsAdmin = true
             };
-
+            //asert
             Assert.Equal("user-123", user.Id);
             Assert.Equal("test@example.com", user.UserName);
             Assert.Equal("test@example.com", user.Email);
@@ -32,9 +34,11 @@ namespace Vacation_API.Tests.Models
             Assert.True(user.IsAdmin);
         }
 
+        //user validation test
         [Fact]
         public void User_RequiredFieldsValidation()
         {
+            //act
             var user = new User();
             
             var validationContext = new ValidationContext(user);
@@ -46,7 +50,7 @@ namespace Vacation_API.Tests.Models
             {
                 propertyNames.AddRange(validationResult.MemberNames);
             }
-            
+            //asert
             Assert.Contains("FirstName", propertyNames);
             Assert.Contains("LastName", propertyNames);
             Assert.Contains("Password", propertyNames);
@@ -55,8 +59,9 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void User_DefaultsAreSet()
         {
+            //act
             var user = new User();
-            
+            //asert
             Assert.False(user.IsAdmin);
             Assert.NotNull(user.Bookings);
             Assert.Empty(user.Bookings);

@@ -21,9 +21,8 @@ namespace Vacation_API.Tests.Controllers
                 .Options;
 
             _context = new VacationDbContext(options);
-            _context.Database.EnsureDeleted(); // Start fresh each test
+            _context.Database.EnsureDeleted(); // Start fresh on each test
             
-            // Add a test accommodation
             _context.Accommodations.Add(new Accommodation { 
                 AccommodationID = 1, 
                 HotelName = "Test Hotel", 
@@ -48,6 +47,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.NotEmpty(items);
         }
 
+        //test on accomdations
         [Fact]
         public async void GetAccommodation_WithValidId_ReturnsAccommodation()
         {
@@ -79,6 +79,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.NotNull(createdResult.Value);
         }
 
+        //test on updates on accomndation
         [Fact]
         public async void PutAccommodation_WithValidId_UpdatesAccommodation()
         {
@@ -103,6 +104,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.IsType<NoContentResult>(result);
         }
 
+        //test on remove accomndation
         [Fact]
         public async void DeleteAccommodation_WithValidId_RemovesAccommodation()
         {

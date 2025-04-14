@@ -18,7 +18,7 @@ namespace Vacation_API.Tests.Controllers
 
         public BookingsControllerTests()
         {
-            // Simple in-memory database setup
+            // in-memory database setup
             var options = new DbContextOptionsBuilder<VacationDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestBookingsDb")
                 .Options;
@@ -26,7 +26,7 @@ namespace Vacation_API.Tests.Controllers
             _context = new VacationDbContext(options);
             _context.Database.EnsureDeleted(); // Start fresh each test
             
-            // Setup minimal required data
+            // required data
             _context.Users.Add(new User { 
                 Id = "user1", 
                 UserName = "test@example.com",
@@ -86,6 +86,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.NotEmpty(result.Value);
         }
 
+        //booking test
         [Fact]
         public async void GetBooking_WithValidId_ReturnsBooking()
         {
@@ -132,6 +133,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.IsType<BadRequestObjectResult>(actionResult.Result);
         }
 
+        //return user test
         [Fact]
         public async Task GetBookingsByUser_ReturnsUserBookings()
         {
@@ -145,6 +147,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.Equal(1, bookings.First().BookingID);
         }
 
+        //add booking test
         [Fact]
         public async Task PostBooking_WithValidModel_AddsBooking()
         {
@@ -207,6 +210,7 @@ namespace Vacation_API.Tests.Controllers
             Assert.IsType<NoContentResult>(result);
         }
 
+        //delete booking test
         [Fact]
         public async Task DeleteBooking_WithValidId_ReturnsNoContent()
         {

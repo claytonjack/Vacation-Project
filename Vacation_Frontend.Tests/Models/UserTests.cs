@@ -32,6 +32,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.True(user.IsAdmin);
         }
 
+        //booking collection test
         [Fact]
         public void BookingsCollectionIsInitialized()
         {

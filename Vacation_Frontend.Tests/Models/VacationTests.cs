@@ -45,6 +45,7 @@ namespace Vacation_Frontend.Tests.Models
             Assert.Equal(string.Empty, vacation.Description);
         }
 
+        //collection of booking test
         [Fact]
         public void BookingsCollectionIsInitialized()
         {

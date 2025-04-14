@@ -5,6 +5,7 @@ namespace Vacation_Frontend.Tests.Models
 {
     public class SearchCriteriaTests
     {
+        //search test
         [Fact]
         public void CanSetAndGetProperties()
         {

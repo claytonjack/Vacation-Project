@@ -10,6 +10,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Vacation_PropertiesGetAndSet()
         {
+            //act
             var vacation = new Vacation
             {
                 VacationID = 1,
@@ -22,7 +23,7 @@ namespace Vacation_API.Tests.Models
                 DestinationID = 1,
                 AccommodationID = 1
             };
-
+            //asert
             Assert.Equal(1, vacation.VacationID);
             Assert.Equal("Paris Getaway", vacation.Name);
             Assert.Equal("Romantic weekend in Paris", vacation.Description);
@@ -37,6 +38,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Vacation_RequiredFieldsValidation()
         {
+            //act
             var vacation = new Vacation();
             
             var validationContext = new ValidationContext(vacation);
@@ -48,7 +50,7 @@ namespace Vacation_API.Tests.Models
             {
                 propertyNames.AddRange(validationResult.MemberNames);
             }
-            
+            //asert
             Assert.Contains("Name", propertyNames);
             Assert.Contains("Description", propertyNames);
         }
@@ -56,17 +58,20 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Vacation_DefaultStringProperties()
         {
+            //act
             var vacation = new Vacation();
-            
+            //asert
             Assert.Equal(string.Empty, vacation.Name);
             Assert.Equal(string.Empty, vacation.Description);
         }
 
+        //booking test
         [Fact]
         public void Vacation_BookingsCollectionInitialized()
         {
+            //act
             var vacation = new Vacation();
-            
+            //asert
             Assert.NotNull(vacation.Bookings);
             Assert.Empty(vacation.Bookings);
         }

@@ -10,6 +10,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Destination_PropertiesGetAndSet()
         {
+            //act
             var destination = new Destination
             {
                 DestinationID = 1,
@@ -17,7 +18,7 @@ namespace Vacation_API.Tests.Models
                 Country = "France",
                 ImageUrl = "/images/paris.jpg"
             };
-
+            //asert
             Assert.Equal(1, destination.DestinationID);
             Assert.Equal("Paris", destination.City);
             Assert.Equal("France", destination.Country);
@@ -27,6 +28,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Destination_RequiredFieldsValidation()
         {
+            //act
             var destination = new Destination();
             
             var validationContext = new ValidationContext(destination);
@@ -38,7 +40,7 @@ namespace Vacation_API.Tests.Models
             {
                 propertyNames.AddRange(validationResult.MemberNames);
             }
-            
+            //asert
             Assert.Contains("City", propertyNames);
             Assert.Contains("Country", propertyNames);
         }
@@ -46,8 +48,9 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Destination_VacationsCollectionInitialized()
         {
+            //act
             var destination = new Destination();
-            
+            //asert
             Assert.NotNull(destination.Vacations);
             Assert.Empty(destination.Vacations);
         }

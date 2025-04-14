@@ -11,6 +11,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Booking_PropertiesGetAndSet()
         {
+            //Act
             var now = DateTime.Now;
             var checkIn = DateTime.Now.AddDays(7);
             
@@ -26,7 +27,7 @@ namespace Vacation_API.Tests.Models
                 BookingDate = now,
                 SpecialRequests = "Late check-in"
             };
-
+            //Assert
             Assert.Equal(1, booking.BookingID);
             Assert.Equal("user1", booking.UserID);
             Assert.Equal(1, booking.VacationID);
@@ -41,6 +42,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Booking_RequiredFieldsValidation()
         {
+            //act
             var booking = new Booking();
             
             var validationContext = new ValidationContext(booking);
@@ -52,7 +54,7 @@ namespace Vacation_API.Tests.Models
             {
                 propertyNames.AddRange(validationResult.MemberNames);
             }
-            
+            //Assert
             Assert.Contains("UserID", propertyNames);
             Assert.Contains("NumberOfNights", propertyNames);
             Assert.Contains("NumberOfGuests", propertyNames);
@@ -61,6 +63,7 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Booking_RangeValidation()
         {
+            //act
             var booking = new Booking
             {
                 UserID = "user1",
@@ -79,7 +82,7 @@ namespace Vacation_API.Tests.Models
             {
                 propertyNames.AddRange(validationResult.MemberNames);
             }
-            
+            //Assert
             Assert.Contains("NumberOfNights", propertyNames);
             Assert.Contains("NumberOfGuests", propertyNames);
         }
@@ -87,9 +90,11 @@ namespace Vacation_API.Tests.Models
         [Fact]
         public void Booking_DefaultsAreSet()
         {
+            //act
             var booking = new Booking();
             
             var timeDifference = Math.Abs((DateTime.Now - booking.BookingDate).TotalSeconds);
+            //Assert
             Assert.True(timeDifference < 10);
         }
     }
