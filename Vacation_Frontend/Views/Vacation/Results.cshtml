@@ -1,0 +1,42 @@
+@model IEnumerable<VacationBooking.Models.Vacation>
+@{
+    ViewData["Title"] = "Search Results";
+    var criteria = ViewBag.SearchCriteria as VacationBooking.Models.SearchCriteria;
+}
+
+<h1>Search Results</h1>
+
+<div class="mb-4">
+    <a asp-action="Search" class="btn btn-outline-secondary">Modify Search</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No vacation packages match your search criteria. Please try with different search terms.
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="@(item.Destination?.ImageUrl ?? "/images/placeholder.jpg")" class="card-img-top" alt="@item.Destination?.City">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@item.Destination.City</h6>
+                        <p class="card-text">@item.Description.Substring(0, Math.Min(100, item.Description.Length))...</p>
+                        <p class="card-text">
+                            <strong>$@item.PricePerNight</strong> / night
+                        </p>
+                        <div class="text-center">
+                            <a asp-controller="Vacation" asp-action="Details" asp-route-id="@item.VacationID" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

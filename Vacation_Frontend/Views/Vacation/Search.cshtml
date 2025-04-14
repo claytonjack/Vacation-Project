@@ -1,0 +1,60 @@
+@model VacationBooking.Models.SearchCriteria
+@{
+    ViewData["Title"] = "Search Vacations";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="page-header">Search Vacations</h1>
+        
+        <div class="app-card card">
+            <div class="card-body">
+                <form asp-action="Results" method="post" class="app-form">
+                    <div class="form-group">
+                        <label asp-for="City" class="form-label"></label>
+                        <input asp-for="City" class="form-control" placeholder="City" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="Country" class="form-label"></label>
+                        <input asp-for="Country" class="form-control" placeholder="Country" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="MaxPricePerNight" class="form-label"></label>
+                        <input asp-for="MaxPricePerNight" class="form-control" type="number" step="0.01" placeholder="Max Price Per Night" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="RoomType" class="form-label"></label>
+                        <input asp-for="RoomType" class="form-control" placeholder="Room Type" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="AllInclusive" class="form-label"></label>
+                        <div class="mt-2">
+                            <div class="form-check form-check-inline">
+                                <input type="radio" class="form-check-input" id="allInclusiveAny" name="AllInclusive" value="" checked />
+                                <label class="form-check-label" for="allInclusiveAny">Any</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" class="form-check-input" id="allInclusiveYes" name="AllInclusive" value="true" />
+                                <label class="form-check-label" for="allInclusiveYes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" class="form-check-input" id="allInclusiveNo" name="AllInclusive" value="false" />
+                                <label class="form-check-label" for="allInclusiveNo">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mt-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-2"></i>Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

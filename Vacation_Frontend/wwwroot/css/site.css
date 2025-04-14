@@ -1,0 +1,208 @@
+html {
+	font-size: 14px;
+	position: relative;
+	min-height: 100%;
+}
+
+@media (min-width: 768px) {
+	html {
+		font-size: 16px;
+	}
+}
+
+body {
+	margin-bottom: 80px;
+	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+	background-color: #f8f9fa;
+}
+
+.btn:focus,
+.btn:active:focus,
+.form-control:focus,
+.form-check-input:focus {
+	box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	white-space: nowrap;
+	line-height: 60px;
+	text-align: center;
+	background-color: #343a40;
+	color: white;
+}
+
+.footer a {
+	color: #8bb9fe;
+}
+
+.app-card {
+	border-radius: 8px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	margin-bottom: 1.5rem;
+	overflow: hidden;
+	height: 100%;
+}
+
+.app-card:hover {
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.app-card .card-header {
+	font-weight: 600;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	padding: 0.8rem 1.25rem;
+}
+
+.app-card .card-footer {
+	background-color: rgba(0, 0, 0, 0.03);
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+	padding: 1rem 1.25rem;
+}
+
+.app-card .card-img-top {
+	height: 200px;
+	object-fit: cover;
+}
+
+.app-form .form-group {
+	margin-bottom: 1.5rem;
+}
+
+.app-form .form-control {
+	border-radius: 4px;
+	padding: 0.6rem 0.75rem;
+	height: auto;
+}
+
+.app-form label {
+	font-weight: 500;
+	margin-bottom: 0.4rem;
+}
+
+.btn {
+	border-radius: 6px;
+	padding: 0.6rem 1.25rem;
+	font-weight: 500;
+}
+
+.btn-group .btn {
+	margin-top: 0;
+	padding: 0.5rem 1rem;
+}
+
+.btn-lg {
+	padding: 0.75rem 1.5rem;
+	font-size: 1.1rem;
+}
+
+.btn-primary {
+	background-color: #0d6efd;
+}
+
+.btn-success {
+	background-color: #198754;
+}
+
+.btn-danger {
+	background-color: #dc3545;
+}
+
+.page-header {
+	margin-bottom: 1.5rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.img-header {
+	height: 300px;
+	width: 100%;
+	object-fit: cover;
+	border-radius: 8px;
+	margin-bottom: 1rem;
+}
+
+.app-carousel {
+	margin-bottom: 1.5rem;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.app-carousel .carousel-item img {
+	height: 400px;
+	object-fit: cover;
+}
+
+.app-carousel .carousel-caption {
+	background-color: rgba(0, 0, 0, 0.6);
+	border-radius: 5px;
+	padding: 10px;
+	bottom: 20px;
+}
+
+.info-list dt {
+	font-weight: 600;
+}
+
+.info-list dd {
+	margin-bottom: 0.7rem;
+}
+
+.app-table {
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.app-table thead {
+	background-color: #f1f3f5;
+}
+
+.app-table th {
+	font-weight: 600;
+	padding: 0.75rem 1rem;
+}
+
+.app-table td {
+	padding: 0.75rem 1rem;
+	vertical-align: middle;
+}
+
+.admin-card {
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-card .card-header {
+	background-color: #343a40;
+	color: #fff;
+	font-weight: 600;
+}
+
+.admin-actions .btn {
+	font-size: 0.9rem;
+	padding: 0.5rem 0.75rem;
+}
+
+.mt-4 {
+	margin-top: 1.5rem !important;
+}
+
+@media (max-width: 767px) {
+	.app-carousel .carousel-item img {
+		height: 300px;
+	}
+
+	.app-card .card-img-top {
+		height: 180px;
+	}
+
+	.btn-group .btn {
+		padding: 0.4rem 0.8rem;
+		font-size: 0.875rem;
+	}
+}

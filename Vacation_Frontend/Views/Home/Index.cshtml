@@ -1,0 +1,44 @@
+﻿@model IEnumerable<VacationBooking.Models.Vacation>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="p-4 mb-4 bg-primary text-white rounded-3 text-center">
+    <div class="container-fluid py-4">
+        <h1 class="display-5 fw-bold">Find Your Dream Vacation</h1>
+        <p class="fs-5">Explore our wide range of vacation packages and create unforgettable memories.</p>
+        <div class="mt-4">
+            <a class="btn btn-light btn-lg" asp-controller="Vacation" asp-action="Search" role="button">
+                <i class="bi bi-search me-2"></i>Search Vacations
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="text-center page-header">Featured Vacation Packages</h2>
+    <div class="row">
+        @foreach (var vacation in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="app-card card h-100">
+                    <img src="@(vacation.ImageUrl ?? vacation.Destination?.ImageUrl ?? "/images/placeholder.jpg")" 
+                         class="card-img-top" alt="@vacation.Destination?.City">
+                    <div class="card-body">
+                        <h5 class="card-title">@vacation.Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@vacation.Destination.City, @vacation.Destination.Country</h6>
+                        <p class="card-text">@vacation.Description.Substring(0, Math.Min(100, vacation.Description.Length))...</p>
+                        <p class="card-text text-primary fw-bold">
+                            $@vacation.PricePerNight <span class="text-muted fw-normal">/ night</span>
+                        </p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a asp-controller="Vacation" asp-action="Details" asp-route-id="@vacation.VacationID" class="btn btn-primary">
+                            <i class="bi bi-info-circle me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

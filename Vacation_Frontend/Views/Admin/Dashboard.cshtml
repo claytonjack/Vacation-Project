@@ -1,0 +1,69 @@
+@model IEnumerable<VacationBooking.Models.Vacation>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-header mb-0">Admin Dashboard</h1>
+        <a asp-controller="Admin" asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i>Create New Vacation
+        </a>
+    </div>
+    
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    <div class="app-card card">
+        <div class="card-header bg-primary text-white">
+            Manage Vacation Packages
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Destination</th>
+                        <th>Accommodation</th>
+                        <th>Price/Night</th>
+                        <th>All Inclusive</th>
+                        <th>Available Rooms</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.VacationID</td>
+                            <td>@item.Name</td>
+                            <td>@item.Destination.City, @item.Destination.Country</td>
+                            <td>@item.Accommodation.HotelName</td>
+                            <td>@item.PricePerNight.ToString("C")</td>
+                            <td>@(item.AllInclusive ? "Yes" : "No")</td>
+                            <td>@item.AvailableRooms</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a asp-controller="Admin" asp-action="Edit" asp-route-id="@item.VacationID" 
+                                       class="btn btn-sm btn-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-controller="Admin" asp-action="Delete" asp-route-id="@item.VacationID" 
+                                       class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

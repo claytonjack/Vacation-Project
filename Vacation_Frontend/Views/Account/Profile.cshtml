@@ -1,0 +1,84 @@
+@model VacationBooking.Models.User
+@{
+    ViewData["Title"] = "Profile";
+    var bookings = ViewBag.Bookings as List<VacationBooking.Models.Booking>;
+}
+
+<h1 class="page-header">Your Profile</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="app-card card">
+            <div class="card-header bg-dark text-white">
+                <h2 class="fs-5 mb-0"><i class="bi bi-person-circle me-2"></i>Personal Information</h2>
+            </div>
+            <div class="card-body">
+                <dl class="row info-list">
+                    <dt class="col-sm-3">First Name</dt>
+                    <dd class="col-sm-9">@Model.FirstName</dd>
+
+                    <dt class="col-sm-3">Last Name</dt>
+                    <dd class="col-sm-9">@Model.LastName</dd>
+                    
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">@Model.Email</dd>
+                    
+                    <dt class="col-sm-3">Phone</dt>
+                    <dd class="col-sm-9">@Model.PhoneNumber</dd>
+                    
+                    <dt class="col-sm-3">Address</dt>
+                    <dd class="col-sm-9">@Model.Address</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="app-card card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h2 class="fs-5 mb-0"><i class="bi bi-calendar-check me-2"></i>Your Bookings</h2>
+    </div>
+    <div class="card-body">
+        @if (bookings == null || !bookings.Any())
+        {
+            <div class="text-center py-4">
+                <p class="lead mb-3">You don't have any bookings yet.</p>
+                <a asp-controller="Vacation" asp-action="Search" class="btn btn-primary">
+                    <i class="bi bi-search me-2"></i>Search for Vacations
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped app-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Vacation</th>
+                            <th>Check-in Date</th>
+                            <th>Nights</th>
+                            <th>Guests</th>
+                            <th>Total Price</th>
+                            <th>Booking Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var booking in bookings)
+                        {
+                            <tr>
+                                <td>@booking.BookingID</td>
+                                <td>@booking.Vacation?.Name</td>
+                                <td>@booking.CheckInDate.ToShortDateString()</td>
+                                <td>@booking.NumberOfNights</td>
+                                <td>@booking.NumberOfGuests</td>
+                                <td class="text-primary fw-bold">$@booking.TotalPrice</td>
+                                <td>@booking.BookingDate.ToShortDateString()</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

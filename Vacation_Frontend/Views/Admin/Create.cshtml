@@ -1,0 +1,133 @@
+@model VacationBooking.Models.Vacation
+@{
+    ViewData["Title"] = "Create Vacation Package";
+}
+
+<h1>Create Vacation Package</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <form asp-controller="Admin" asp-action="Create" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    Basic Information
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Name" class="control-label"></label>
+                                <input asp-for="Name" class="form-control" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label asp-for="PricePerNight" class="control-label"></label>
+                                <input asp-for="PricePerNight" class="form-control" />
+                                <span asp-validation-for="PricePerNight" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label asp-for="AvailableRooms" class="control-label"></label>
+                                <input asp-for="AvailableRooms" class="form-control" />
+                                <span asp-validation-for="AvailableRooms" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group form-check mb-3">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" asp-for="AllInclusive" /> @Html.DisplayNameFor(model => model.AllInclusive)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="DestinationID" class="control-label">Destination</label>
+                                <select asp-for="DestinationID" class="form-control">
+                                    @foreach (var dest in ViewBag.Destinations)
+                                    {
+                                        <option value="@dest.DestinationID">@dest.City, @dest.Country</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label asp-for="AccommodationID" class="control-label">Accommodation</label>
+                                <select asp-for="AccommodationID" class="form-control">
+                                    @foreach (var acc in ViewBag.Accommodations)
+                                    {
+                                        <option value="@acc.AccommodationID">@acc.HotelName - @acc.RoomType</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Description" class="control-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    Photos
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header">Vacation Image</div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="vacationImage">Upload Vacation Image</label>
+                                        <input type="file" id="vacationImage" name="vacationImage" class="form-control" accept="image/*">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header">Destination Image</div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="destinationImage">Upload Destination Image</label>
+                                        <input type="file" id="destinationImage" name="destinationImage" class="form-control" accept="image/*">
+                                        <small class="form-text text-muted">Only if destination doesn't have an image yet</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header">Accommodation Image</div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="accommodationImage">Upload Accommodation Image</label>
+                                        <input type="file" id="accommodationImage" name="accommodationImage" class="form-control" accept="image/*">
+                                        <small class="form-text text-muted">Only if accommodation doesn't have an image yet</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-controller="AdminDashboard" asp-action="Dashboard" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

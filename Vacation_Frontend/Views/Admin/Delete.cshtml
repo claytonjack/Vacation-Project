@@ -1,0 +1,47 @@
+@model VacationBooking.Models.Vacation
+@{
+    ViewData["Title"] = "Delete Vacation Package";
+}
+
+<h1>Delete Vacation Package</h1>
+
+<div class="alert alert-danger">
+    <h3>Are you sure you want to delete this vacation package?</h3>
+    <p>This action cannot be undone.</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>@Model.Name</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <dl class="row">
+                    <dt class="col-sm-4">Destination:</dt>
+                    <dd class="col-sm-8">@Model.Destination.City, @Model.Destination.Country</dd>
+                    
+                    <dt class="col-sm-4">Accommodation:</dt>
+                    <dd class="col-sm-8">@Model.Accommodation.HotelName (@Model.Accommodation.RoomType)</dd>
+                    
+                    <dt class="col-sm-4">Price per Night:</dt>
+                    <dd class="col-sm-8">@Model.PricePerNight.ToString("C")</dd>
+                    
+                    <dt class="col-sm-4">All Inclusive:</dt>
+                    <dd class="col-sm-8">@(Model.AllInclusive ? "Yes" : "No")</dd>
+                    
+                    <dt class="col-sm-4">Available Rooms:</dt>
+                    <dd class="col-sm-8">@Model.AvailableRooms</dd>
+                </dl>
+                
+                <div class="mt-4">
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="VacationID" />
+                        <input type="submit" value="Delete" class="btn btn-danger" />
+                        <a asp-action="Dashboard" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

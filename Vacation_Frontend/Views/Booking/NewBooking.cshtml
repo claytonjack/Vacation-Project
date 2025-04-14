@@ -1,0 +1,138 @@
+@model VacationBooking.Models.Booking
+@{
+    ViewData["Title"] = "Book Vacation";
+}
+
+<h1 class="page-header">Book Vacation Package</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="app-card card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">@Model.Vacation.Name</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    @if (!string.IsNullOrEmpty(Model.Vacation.ImageUrl))
+                    {
+                        <img src="@Model.Vacation.ImageUrl" class="img-fluid rounded mb-3" alt="@Model.Vacation.Name">
+                    }
+                    else if (Model.Vacation.Destination != null && !string.IsNullOrEmpty(Model.Vacation.Destination.ImageUrl))
+                    {
+                        <img src="@Model.Vacation.Destination.ImageUrl" class="img-fluid rounded mb-3" alt="@Model.Vacation.Destination.City">
+                    }
+                </div>
+                
+                <dl class="row info-list">
+                    <dt class="col-sm-4">Destination:</dt>
+                    <dd class="col-sm-8">@Model.Vacation.Destination.City, @Model.Vacation.Destination.Country</dd>
+                    
+                    <dt class="col-sm-4">Accommodation:</dt>
+                    <dd class="col-sm-8">@Model.Vacation.Accommodation.HotelName (@Model.Vacation.Accommodation.RoomType)</dd>
+                    
+                    <dt class="col-sm-4">Price per Night:</dt>
+                    <dd class="col-sm-8 text-primary fw-bold">$@Model.Vacation.PricePerNight.ToString("F2")</dd>
+                    
+                    <dt class="col-sm-4">All Inclusive:</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Vacation.AllInclusive)
+                        {
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>No</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="app-card card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Booking Details</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="NewBooking" method="post" class="app-form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="VacationID" />
+                    
+                    <div class="form-group">
+                        <label asp-for="CheckInDate" class="form-label"></label>
+                        <input asp-for="CheckInDate" class="form-control" type="date" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="CheckInDate" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="NumberOfNights" class="form-label"></label>
+                        <input asp-for="NumberOfNights" class="form-control" type="number" min="1" max="30" />
+                        <span asp-validation-for="NumberOfNights" class="text-danger"></span>
+                        <small class="form-text text-muted">Stay between 1 and 30 nights</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="NumberOfGuests" class="form-label"></label>
+                        <input asp-for="NumberOfGuests" class="form-control" type="number" min="1" max="10" />
+                        <span asp-validation-for="NumberOfGuests" class="text-danger"></span>
+                        <small class="form-text text-muted">Up to 10 guests per booking</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="SpecialRequests" class="form-label"></label>
+                        <textarea asp-for="SpecialRequests" class="form-control" rows="3" placeholder="Any special requests or preferences..."></textarea>
+                        <span asp-validation-for="SpecialRequests" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mt-4 d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>Complete Booking
+                        </button>
+                        <a asp-controller="Vacation" asp-action="Details" asp-route-id="@Model.VacationID" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Vacation Details
+                        </a>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-shield-check text-success me-2 fs-5"></i>
+                    <small>Your booking is secure and your information is protected</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Calculate and display total price dynamically
+        $(document).ready(function() {
+            const pricePerNight = @Html.Raw(Json.Serialize(Model.Vacation.PricePerNight));
+            
+            function updateTotalPrice() {
+                const nights = $("#NumberOfNights").val();
+                const total = (nights * pricePerNight).toFixed(2);
+                
+                if (!$("#totalPriceDisplay").length) {
+                    $(".app-form").append(`
+                        <div id="totalPriceDisplay" class="alert alert-info mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-calculator me-2"></i>Total Price:</span>
+                                <span class="fw-bold fs-5">$${total}</span>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    $("#totalPriceDisplay span:last").text("$" + total);
+                }
+            }
+            
+            $("#NumberOfNights").on("change input", updateTotalPrice);
+            updateTotalPrice(); // Initial calculation
+        });
+    </script>
+} 
