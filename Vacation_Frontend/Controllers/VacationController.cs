@@ -8,7 +8,7 @@ namespace VacationBooking.Controllers
 {
     /// <summary>
     /// Controller for vacation package search and browsing.
-    /// Principal Author: Mostafa
+    /// Principal Author: Jack
     /// </summary>
     public class VacationController : Controller
     {

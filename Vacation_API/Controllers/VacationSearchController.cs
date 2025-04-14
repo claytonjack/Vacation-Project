@@ -11,7 +11,7 @@ namespace VacationBooking.Controllers
 {
     /// <summary>
     /// Controller for searching vacation packages with advanced search criteria.
-    /// Principal Author: Mostafa 
+    /// Principal Author: Jack 
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]

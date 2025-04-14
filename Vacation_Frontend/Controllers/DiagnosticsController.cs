@@ -8,6 +8,10 @@ using System.Text.Json;
 
 namespace VacationBooking.Controllers
 {
+    /// <summary>
+    /// Controller for diagnosing operations.
+    /// Principal Author: Mostafa
+    /// </summary>
     public class DiagnosticsController : Controller
     {
         private readonly VacationApiService _apiService;
