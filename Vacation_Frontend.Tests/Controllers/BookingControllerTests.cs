@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
@@ -11,51 +10,53 @@ using VacationBooking.Controllers;
 using VacationBooking.Models;
 using VacationBooking.Services;
 using Xunit;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace Vacation_Frontend.Tests.Controllers
 {
     public class BookingControllerTests
     {
-        private readonly VacationApiService _apiService;
-        private readonly Mock<UserManager<User>> _mockUserManager;
+        private readonly Mock<IVacationApiService> _mockApiService;
         private readonly BookingController _controller;
         private readonly User _testUser;
-        private readonly Mock<HttpMessageHandler> _mockHttpHandler;
-        private readonly HttpClient _httpClient;
-        private readonly Mock<IConfiguration> _mockConfiguration;
 
         public BookingControllerTests()
         {
             _testUser = new User
             {
                 Id = "user-1",
-                UserName = "test@example.com",
-                Email = "test@example.com"
+                UserName = "user@example.com",
+                Email = "user@example.com"
             };
 
-            var userStoreMock = new Mock<IUserStore<User>>();
-            _mockUserManager = new Mock<UserManager<User>>(
-                userStoreMock.Object, null, null, null, null, null, null, null, null);
+            // Mock the API service
+            _mockApiService = new Mock<IVacationApiService>();
             
-            _mockUserManager
-                .Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            // Set up the mock to return the test user
+            _mockApiService
+                .Setup(s => s.GetCurrentUserAsync(It.IsAny<ClaimsPrincipal>()))
                 .ReturnsAsync(_testUser);
-
-            _mockHttpHandler = new Mock<HttpMessageHandler>();
-            _httpClient = new HttpClient(_mockHttpHandler.Object)
-            {
-                BaseAddress = new Uri("http://test-api.com")
-            };
-
-            _mockConfiguration = new Mock<IConfiguration>();
-            _mockConfiguration.Setup(c => c["ApiSettings:BaseUrl"]).Returns("http://test-api.com");
-
-            _apiService = new VacationApiService(_httpClient, _mockConfiguration.Object);
             
-            _controller = new BookingController(_apiService, _mockUserManager.Object);
+            // Create controller with mock API service
+            _controller = new BookingController(_mockApiService.Object);
+            
+            // Set up controller context with a valid ClaimsPrincipal
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, "user@example.com"),
+                new Claim(ClaimTypes.NameIdentifier, "user-1")
+            };
+            var identity = new ClaimsIdentity(claims, "Test");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+            
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
         }
 
-        //bookinng with id test
+        //booking with id test
         [Fact]
         public async Task NewBooking_WithValidId_ReturnsViewWithBooking()
         {
@@ -67,22 +68,10 @@ namespace Vacation_Frontend.Tests.Controllers
                 PricePerNight = 289.99m
             };
 
-            var jsonResponse = JsonSerializer.Serialize(vacation);
-            var response = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
-            };
-
-            _mockHttpHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Get && 
-                        req.RequestUri.ToString().Contains($"/vacations/{vacationId}")),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(response);
+            // Setup GetVacationByIdAsync
+            _mockApiService
+                .Setup(m => m.GetVacationByIdAsync(vacationId))
+                .ReturnsAsync(vacation);
 
             var result = await _controller.NewBooking(vacationId) as ViewResult;
             var model = result?.Model as Booking;
@@ -118,39 +107,15 @@ namespace Vacation_Frontend.Tests.Controllers
                 TotalPrice = 3 * 289.99m
             };
 
-            var vacationJsonResponse = JsonSerializer.Serialize(vacation);
-            var vacationResponse = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(vacationJsonResponse, Encoding.UTF8, "application/json")
-            };
-
-            var bookingJsonResponse = JsonSerializer.Serialize(booking);
-            var bookingResponse = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.Created,
-                Content = new StringContent(bookingJsonResponse, Encoding.UTF8, "application/json")
-            };
-
-            _mockHttpHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Get && 
-                        req.RequestUri.ToString().Contains($"/vacations/{vacationId}")),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(vacationResponse);
-
-            _mockHttpHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Post && 
-                        req.RequestUri.ToString().Contains("bookings")),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(bookingResponse);
+            // Setup GetVacationByIdAsync
+            _mockApiService
+                .Setup(m => m.GetVacationByIdAsync(vacationId))
+                .ReturnsAsync(vacation);
+                
+            // Setup CreateBookingAsync
+            _mockApiService
+                .Setup(m => m.CreateBookingAsync(It.IsAny<Booking>()))
+                .ReturnsAsync(booking);
 
             var result = await _controller.NewBooking(
                 vacationId,
@@ -164,7 +129,7 @@ namespace Vacation_Frontend.Tests.Controllers
             Assert.Equal(booking.BookingID, result.RouteValues["id"]);
         }
 
-        //connfirmation of id test
+        //confirmation of id test
         [Fact]
         public async Task Confirmation_WithValidId_ReturnsViewWithBooking()
         {
@@ -179,31 +144,10 @@ namespace Vacation_Frontend.Tests.Controllers
                 TotalPrice = 3 * 289.99m
             };
 
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, _testUser.Id)
-            }));
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext { User = user }
-            };
-
-            var jsonResponse = JsonSerializer.Serialize(booking);
-            var response = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
-            };
-
-            _mockHttpHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Get && 
-                        req.RequestUri.ToString().Contains($"bookings/{bookingId}")),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(response);
+            // Setup GetBookingByIdAsync
+            _mockApiService
+                .Setup(m => m.GetBookingByIdAsync(bookingId))
+                .ReturnsAsync(booking);
 
             var result = await _controller.Confirmation(bookingId) as ViewResult;
             var model = result?.Model as Booking;

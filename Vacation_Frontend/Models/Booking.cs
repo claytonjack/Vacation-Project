@@ -40,9 +40,9 @@ namespace VacationBooking.Models
         public string SpecialRequests { get; set; }
 
         [ForeignKey("UserID")]
-        public virtual User User { get; set; } = null!;
+        public virtual User User { get; set; }
         
         [ForeignKey("VacationID")]
-        public virtual Vacation Vacation { get; set; } = null!;
+        public virtual Vacation Vacation { get; set; }
     }
 }

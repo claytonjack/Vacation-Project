@@ -21,22 +21,15 @@ namespace VacationBooking.Controllers
         /// <summary>
         /// Service for interacting with the vacation API
         /// </summary>
-        private readonly VacationApiService _apiService;
-        
-        /// <summary>
-        /// Manager for user authentication and information
-        /// </summary>
-        private readonly UserManager<User> _userManager;
+        private readonly IVacationApiService _apiService;
 
         /// <summary>
         /// Initializes a new instance of the AdminController
         /// </summary>
         /// <param name="apiService">Service for API interactions</param>
-        /// <param name="userManager">Manager for user operations</param>
-        public AdminController(VacationApiService apiService, UserManager<User> userManager)
+        public AdminController(IVacationApiService apiService)
         {
             _apiService = apiService;
-            _userManager = userManager;
         }
 
         /// <summary>
@@ -433,8 +426,7 @@ namespace VacationBooking.Controllers
         /// <returns>True if the user is an admin, false otherwise</returns>
         private async Task<bool> IsUserAdmin()
         {
-            var user = await _userManager.GetUserAsync(User);
-            return user != null && user.IsAdmin;
+            return await _apiService.IsUserAdminAsync(User);
         }
 
         /// <summary>

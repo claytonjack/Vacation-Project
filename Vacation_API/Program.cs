@@ -26,24 +26,42 @@ namespace Vacation_API
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Configure Identity
-            builder.Services.AddIdentity<User, IdentityRole>()
+            // Configure Identity with more options
+            builder.Services.AddIdentity<User, IdentityRole>(options => {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 8;
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+
+                options.User.RequireUniqueEmail = true;
+            })
                 .AddEntityFrameworkStores<VacationDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Configure CORS
+            // Configure Session
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            // Configure CORS with specific origins and credentials
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins(builder.Configuration["AllowedOrigins"].Split(','))
                           .AllowAnyHeader()
-                          .AllowAnyMethod();
+                          .AllowAnyMethod()
+                          .AllowCredentials(); // Important for sending cookies
                 });
             });
-
-            // Register HttpClient 
-            builder.Services.AddHttpClient();
 
             var app = builder.Build();
 
@@ -56,6 +74,7 @@ namespace Vacation_API
 
             app.UseCors("AllowFrontend");
 
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -69,8 +88,20 @@ namespace Vacation_API
                 {
                     var context = services.GetRequiredService<VacationDbContext>();
                     var userManager = services.GetRequiredService<UserManager<User>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
                     
                     context.Database.EnsureCreated();
+                    
+                    // Initialize roles
+                    string[] roleNames = { "Admin", "User" };
+                    foreach (var roleName in roleNames)
+                    {
+                        if (!roleManager.RoleExistsAsync(roleName).Result)
+                        {
+                            roleManager.CreateAsync(new IdentityRole(roleName)).Wait();
+                        }
+                    }
+                    
                     DbInitializer.Initialize(context, userManager);
                 }
                 catch (Exception ex)

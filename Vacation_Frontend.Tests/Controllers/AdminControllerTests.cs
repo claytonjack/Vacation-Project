@@ -11,18 +11,15 @@ using VacationBooking.Controllers;
 using VacationBooking.Models;
 using VacationBooking.Services;
 using Xunit;
+using Microsoft.AspNetCore.Http;
 
 namespace Vacation_Frontend.Tests.Controllers
 {
     public class AdminControllerTests
     {
-        private readonly VacationApiService _apiService;
-        private readonly Mock<UserManager<User>> _mockUserManager;
+        private readonly Mock<IVacationApiService> _mockApiService;
         private readonly AdminController _controller;
         private readonly User _adminUser;
-        private readonly Mock<HttpMessageHandler> _mockHttpHandler;
-        private readonly HttpClient _httpClient;
-        private readonly Mock<IConfiguration> _mockConfiguration;
 
         public AdminControllerTests()
         {
@@ -34,54 +31,50 @@ namespace Vacation_Frontend.Tests.Controllers
                 IsAdmin = true
             };
 
-            var userStoreMock = new Mock<IUserStore<User>>();
-            _mockUserManager = new Mock<UserManager<User>>(
-                userStoreMock.Object, null, null, null, null, null, null, null, null);
+            // Mock the API service instead of using a real instance
+            _mockApiService = new Mock<IVacationApiService>();
             
-            _mockUserManager
-                .Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            // Set up the mock to return the admin user when IsUserAdminAsync is called
+            _mockApiService
+                .Setup(s => s.IsUserAdminAsync(It.IsAny<ClaimsPrincipal>()))
+                .ReturnsAsync(true);
+                
+            _mockApiService
+                .Setup(s => s.GetCurrentUserAsync(It.IsAny<ClaimsPrincipal>()))
                 .ReturnsAsync(_adminUser);
-
-            _mockHttpHandler = new Mock<HttpMessageHandler>();
-            _httpClient = new HttpClient(_mockHttpHandler.Object)
-            {
-                BaseAddress = new Uri("http://test-api.com")
-            };
-
-            _mockConfiguration = new Mock<IConfiguration>();
-            _mockConfiguration.Setup(c => c["ApiSettings:BaseUrl"]).Returns("http://test-api.com");
-
-            _apiService = new VacationApiService(_httpClient, _mockConfiguration.Object);
             
-            _controller = new AdminController(_apiService, _mockUserManager.Object);
+            // Create controller with mock API service
+            _controller = new AdminController(_mockApiService.Object);
+            
+            // Set up controller context with a valid ClaimsPrincipal
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, "admin@example.com"),
+                new Claim(ClaimTypes.NameIdentifier, "admin-1")
+            };
+            var identity = new ClaimsIdentity(claims, "Test");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+            
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
         }
 
         //admin user test
         [Fact]
         public async Task Dashboard_AdminUser_ReturnsViewWithVacations()
         {
+            // Set up mock to return test vacations
             var vacations = new List<Vacation>
             {
                 new Vacation { VacationID = 1, Name = "London City Break", PricePerNight = 289.99m },
                 new Vacation { VacationID = 2, Name = "Paris Romantic Escape", PricePerNight = 249.99m }
             };
-
-            var jsonResponse = JsonSerializer.Serialize(vacations);
-            var response = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
-            };
-
-            _mockHttpHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Get && 
-                        req.RequestUri.ToString().Contains("vacations")),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(response);
+            
+            _mockApiService
+                .Setup(s => s.GetAllVacationsAsync())
+                .ReturnsAsync(vacations);
 
             var result = await _controller.Dashboard() as ViewResult;
             var model = result?.Model as List<Vacation>;
@@ -107,39 +100,13 @@ namespace Vacation_Frontend.Tests.Controllers
                 new Accommodation { AccommodationID = 1, HotelName = "The Grand Hotel" }
             };
 
-            var destJsonResponse = JsonSerializer.Serialize(destinations);
-            var destResponse = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(destJsonResponse, Encoding.UTF8, "application/json")
-            };
+            _mockApiService
+                .Setup(s => s.GetAllDestinationsAsync())
+                .ReturnsAsync(destinations);
 
-            var accomJsonResponse = JsonSerializer.Serialize(accommodations);
-            var accomResponse = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(accomJsonResponse, Encoding.UTF8, "application/json")
-            };
-
-            _mockHttpHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Get && 
-                        req.RequestUri.ToString().Contains("destinations")),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(destResponse);
-
-            _mockHttpHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Get && 
-                        req.RequestUri.ToString().Contains("accommodations")),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(accomResponse);
+            _mockApiService
+                .Setup(s => s.GetAllAccommodationsAsync())
+                .ReturnsAsync(accommodations);
 
             var result = await _controller.Create() as ViewResult;
             var model = result?.Model as Vacation;

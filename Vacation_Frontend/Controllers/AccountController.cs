@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Threading.Tasks;
 using VacationBooking.Models;
 using VacationBooking.Services;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace VacationBooking.Controllers
 {
@@ -18,31 +20,15 @@ namespace VacationBooking.Controllers
         /// <summary>
         /// Service for interacting with the vacation API
         /// </summary>
-        private readonly VacationApiService _apiService;
-        
-        /// <summary>
-        /// Manager for user authentication and information
-        /// </summary>
-        private readonly UserManager<User> _userManager;
-        
-        /// <summary>
-        /// Manager for handling user sign-in operations
-        /// </summary>
-        private readonly SignInManager<User> _signInManager;
+        private readonly IVacationApiService _apiService;
 
         /// <summary>
         /// Initializes a new instance of the AccountController
         /// </summary>
         /// <param name="apiService">Service for API interactions</param>
-        /// <param name="userManager">Manager for user operations</param>
-        /// <param name="signInManager">Manager for sign-in operations</param>
-        public AccountController(VacationApiService apiService, 
-                               UserManager<User> userManager,
-                               SignInManager<User> signInManager)
+        public AccountController(IVacationApiService apiService)
         {
             _apiService = apiService;
-            _userManager = userManager;
-            _signInManager = signInManager;
         }
 
         /// <summary>
@@ -67,42 +53,28 @@ namespace VacationBooking.Controllers
         {
             if (ModelState.IsValid)
             {
-                var existingUser = await _userManager.FindByEmailAsync(model.Email);
-                if (existingUser != null)
+                var registerRequest = new RegisterRequest
                 {
-                    ModelState.AddModelError("Email", "Email is already in use");
-                    return View(model);
-                }
-
-                var user = new User
-                {
-                    UserName = model.Email,
                     Email = model.Email,
+                    Password = model.Password,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     PhoneNumber = model.PhoneNumber,
-                    Address = model.Address,
-                    IsAdmin = false
+                    Address = model.Address
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _apiService.RegisterAsync(registerRequest);
 
-                if (result.Succeeded)
+                if (result.Success)
                 {
-                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsAdmin", user.IsAdmin.ToString()));
-                    
-                    if (user.IsAdmin)
-                    {
-                        await _userManager.AddToRoleAsync(user, "Admin");
-                    }
-
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    // Create the cookie-based authentication
+                    await CreateUserSession(result);
                     return RedirectToAction("Index", "Home");
                 }
 
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError("", error.Description);
+                    ModelState.AddModelError("", error);
                 }
             }
             return View(model);
@@ -133,21 +105,18 @@ namespace VacationBooking.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(login.Email);
-                if (user != null)
+                var result = await _apiService.LoginAsync(login.Email, login.Password, login.Remember);
+                
+                if (result.Success)
                 {
-                    await _signInManager.SignOutAsync();
-                    var result = await _signInManager.PasswordSignInAsync(
-                        user, login.Password, login.Remember, false);
-                        
-                    if (result.Succeeded)
+                    // Create the cookie-based authentication
+                    await CreateUserSession(result);
+                    
+                    if (string.IsNullOrEmpty(login.ReturnUrl))
                     {
-                        if (string.IsNullOrEmpty(login.ReturnUrl))
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
-                        return Redirect(login.ReturnUrl);
+                        return RedirectToAction("Index", "Home");
                     }
+                    return Redirect(login.ReturnUrl);
                 }
                 
                 ModelState.AddModelError("", "Invalid login attempt");
@@ -162,15 +131,16 @@ namespace VacationBooking.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Login");
             }
 
             try
             {
-                var bookings = await _apiService.GetUserBookingsAsync(user.Id);
+                var user = await _apiService.GetUserAsync(userId);
+                var bookings = await _apiService.GetUserBookingsAsync(userId);
                 ViewBag.Bookings = bookings;
 
                 return View(user);
@@ -178,7 +148,7 @@ namespace VacationBooking.Controllers
             catch (Exception)
             {
                 ViewBag.Bookings = new List<Booking>();
-                return View(user);
+                return View(new User { Id = userId });
             }
         }
 
@@ -188,8 +158,45 @@ namespace VacationBooking.Controllers
         /// <returns>Redirect to home page</returns>
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            // Sign out from API
+            await _apiService.LogoutAsync();
+            
+            // Sign out locally
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
+        }
+        
+        private async Task CreateUserSession(AuthResponse authResult)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, authResult.UserId),
+                new Claim(ClaimTypes.Name, authResult.Email),
+                new Claim(ClaimTypes.Email, authResult.Email),
+                new Claim("FirstName", authResult.FirstName),
+                new Claim("LastName", authResult.LastName),
+                new Claim("IsAdmin", authResult.IsAdmin.ToString())
+            };
+            
+            // Add roles
+            foreach (var role in authResult.Roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+            
+            var claimsIdentity = new ClaimsIdentity(
+                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+            };
+            
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
         }
     }
 }

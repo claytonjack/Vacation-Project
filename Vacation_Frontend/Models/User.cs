@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace VacationBooking.Models
 {
@@ -25,6 +26,7 @@ namespace VacationBooking.Models
 
         public bool IsAdmin { get; set; } = false;
 
+        [JsonIgnore]
         public virtual ICollection<Booking> Bookings { get; set; }
 
         public User()

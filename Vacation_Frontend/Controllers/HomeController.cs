@@ -18,13 +18,13 @@ namespace VacationBooking.Controllers
         /// <summary>
         /// Service for interacting with the vacation API
         /// </summary>
-        private readonly VacationApiService _apiService;
+        private readonly IVacationApiService _apiService;
 
         /// <summary>
         /// Initializes a new instance of the HomeController
         /// </summary>
         /// <param name="apiService">Service for API interactions</param>
-        public HomeController(VacationApiService apiService)
+        public HomeController(IVacationApiService apiService)
         {
             _apiService = apiService;
         }

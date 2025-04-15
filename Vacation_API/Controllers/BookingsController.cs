@@ -87,19 +87,31 @@ namespace VacationBooking.Controllers
         [HttpPost]
         public async Task<ActionResult<Booking>> PostBooking(Booking booking)
         {
-            if (!ModelState.IsValid)
+            // Validate basic required fields
+            if (string.IsNullOrEmpty(booking.UserID) || booking.VacationID <= 0 || 
+                booking.CheckInDate == default || booking.NumberOfNights <= 0 || booking.NumberOfGuests <= 0)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Required booking information is missing");
             }
+
+            // Clear navigation properties to avoid tracking conflicts
+            booking.User = null;
+            booking.Vacation = null;
 
             // Validate business rules
             if (booking.CheckInDate < DateTime.Today)
             {
-                ModelState.AddModelError(nameof(booking.CheckInDate), "Check-in date cannot be in the past");
-                return BadRequest(ModelState);
+                return BadRequest("Check-in date cannot be in the past");
             }
 
-            // Calculate total price based on vacation price and number of nights
+            // Check if user exists
+            var user = await _context.Users.FindAsync(booking.UserID);
+            if (user == null)
+            {
+                return BadRequest("Invalid User ID");
+            }
+
+            // Check if vacation exists and calculate total price
             var vacation = await _context.Vacations.FindAsync(booking.VacationID);
             if (vacation == null)
             {
@@ -109,10 +121,32 @@ namespace VacationBooking.Controllers
             booking.TotalPrice = vacation.PricePerNight * booking.NumberOfNights;
             booking.BookingDate = DateTime.Now;
 
-            _context.Bookings.Add(booking);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetBooking", new { id = booking.BookingID }, booking);
+            // Disable validation for this operation
+            _context.ChangeTracker.AutoDetectChangesEnabled = false;
+            
+            try
+            {
+                _context.Bookings.Add(booking);
+                await _context.SaveChangesAsync();
+            
+                // Return a simplified booking without circular references
+                return CreatedAtAction("GetBooking", new { id = booking.BookingID }, new
+                {
+                    booking.BookingID,
+                    booking.UserID,
+                    booking.VacationID,
+                    booking.CheckInDate,
+                    booking.NumberOfNights,
+                    booking.NumberOfGuests,
+                    booking.TotalPrice,
+                    booking.BookingDate,
+                    booking.SpecialRequests
+                });
+            }
+            finally
+            {
+                _context.ChangeTracker.AutoDetectChangesEnabled = true;
+            }
         }
 
         /// <summary>

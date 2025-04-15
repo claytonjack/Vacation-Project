@@ -19,23 +19,15 @@ namespace VacationBooking.Controllers
         /// <summary>
         /// Service for interacting with the vacation API
         /// </summary>
-        private readonly VacationApiService _apiService;
-        
-        /// <summary>
-        /// Manager for user authentication and information
-        /// </summary>
-        private readonly UserManager<User> _userManager;
+        private readonly IVacationApiService _apiService;
 
         /// <summary>
         /// Initializes a new instance of the BookingController
         /// </summary>
         /// <param name="apiService">Service for API interactions</param>
-        /// <param name="userManager">Manager for user operations</param>
-        public BookingController(VacationApiService apiService,
-                              UserManager<User> userManager)
+        public BookingController(IVacationApiService apiService)
         {
             _apiService = apiService;
-            _userManager = userManager;
         }
 
         /// <summary>
@@ -45,7 +37,7 @@ namespace VacationBooking.Controllers
         /// <returns>The booking form view</returns>
         public async Task<IActionResult> NewBooking(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _apiService.GetCurrentUserAsync(User);
             if (user == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -92,7 +84,7 @@ namespace VacationBooking.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NewBooking(int vacationID, DateTime checkInDate, int numberOfNights, int numberOfGuests, string specialRequests)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _apiService.GetCurrentUserAsync(User);
             if (user == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -107,6 +99,27 @@ namespace VacationBooking.Controllers
                     return NotFound();
                 }
 
+                // Validate input
+                if (checkInDate < DateTime.Today)
+                {
+                    ModelState.AddModelError("CheckInDate", "Check-in date cannot be in the past");
+                    return View(new Booking
+                    {
+                        VacationID = vacationID,
+                        UserID = user.Id,
+                        CheckInDate = DateTime.Now.AddDays(1),
+                        NumberOfNights = numberOfNights,
+                        NumberOfGuests = numberOfGuests,
+                        SpecialRequests = specialRequests,
+                        Vacation = vacation
+                    });
+                }
+
+                // Log all fields to help with debugging
+                Console.WriteLine($"Creating booking with: VacationID={vacationID}, UserID={user.Id}, " +
+                                  $"CheckInDate={checkInDate}, Nights={numberOfNights}, Guests={numberOfGuests}");
+                
+                // Create booking with only the required IDs, not the full objects
                 var booking = new Booking
                 {
                     VacationID = vacationID,
@@ -119,11 +132,17 @@ namespace VacationBooking.Controllers
                     BookingDate = DateTime.Now
                 };
 
+                // The associated User and Vacation objects are causing the problem
+                // Let's remove any references to them before sending to the API
+                
                 var createdBooking = await _apiService.CreateBookingAsync(booking);
                 return RedirectToAction("Confirmation", new { id = createdBooking.BookingID });
             }
             catch (Exception ex)
             {
+                // More detailed error handling
+                Console.WriteLine($"Booking creation error: {ex.Message}");
+                
                 try
                 {
                     var vacation = await _apiService.GetVacationByIdAsync(vacationID);
@@ -171,16 +190,37 @@ namespace VacationBooking.Controllers
             {
                 var booking = await _apiService.GetBookingByIdAsync(id);
                 
-                if (booking == null || booking.UserID != userId)
+                if (booking == null)
                 {
+                    // Handle booking not found - don't try to set ShowRequestId
+                    return View("Error", new ErrorViewModel { 
+                        RequestId = "Booking not found"
+                    });
+                }
+                
+                if (booking.UserID != userId)
+                {
+                    // Handle unauthorized access
                     return RedirectToAction("Index", "Home");
+                }
+
+                // If the booking doesn't have vacation details, try to load them separately
+                if (booking.Vacation == null && booking.VacationID > 0)
+                {
+                    var vacation = await _apiService.GetVacationByIdAsync(booking.VacationID);
+                    booking.Vacation = vacation;
                 }
 
                 return View(booking);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return View("Error", new ErrorViewModel { RequestId = "Failed to get booking details" });
+                Console.WriteLine($"Error in Confirmation: {ex.Message}");
+                
+                // Create a more detailed error model - don't try to set ShowRequestId
+                return View("Error", new ErrorViewModel { 
+                    RequestId = $"Failed to get booking details: {ex.Message}"
+                });
             }
         }
     }

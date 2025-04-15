@@ -12,7 +12,7 @@ using VacationBooking.Data;
 namespace Vacation_API.Migrations
 {
     [DbContext(typeof(VacationDbContext))]
-    [Migration("20250413175038_CreateDB")]
+    [Migration("20250415012348_CreateDB")]
     partial class CreateDB
     {
         /// <inheritdoc />

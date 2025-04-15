@@ -83,6 +83,7 @@ namespace VacationBooking.Controllers
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
                 Address = user.Address,
                 IsAdmin = user.IsAdmin
             };

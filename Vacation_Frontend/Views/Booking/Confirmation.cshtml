@@ -19,78 +19,51 @@
 }
 else
 {
-    <div class="card">
-        <div class="card-header bg-success text-white">
-            <h2 class="mb-0">Booking Confirmed!</h2>
-        </div>
-        <div class="card-body">
-            <h4>Thank you for your booking</h4>
-            <p>Your booking has been confirmed. Please find the details below.</p>
-            
-            <hr />
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Booking Details</h5>
-                    <dl class="row">
-                        <dt class="col-sm-4">Booking ID</dt>
-                        <dd class="col-sm-8">@Model.BookingID</dd>
-                        
-                        <dt class="col-sm-4">Booking Date</dt>
-                        <dd class="col-sm-8">@Model.BookingDate.ToLongDateString()</dd>
-                        
-                        <dt class="col-sm-4">Check-in Date</dt>
-                        <dd class="col-sm-8">@Model.CheckInDate.ToLongDateString()</dd>
-                        
-                        <dt class="col-sm-4">Number of Nights</dt>
-                        <dd class="col-sm-8">@Model.NumberOfNights</dd>
-                        
-                        <dt class="col-sm-4">Number of Guests</dt>
-                        <dd class="col-sm-8">@Model.NumberOfGuests</dd>
-                        
-                        <dt class="col-sm-4">Total Price</dt>
-                        <dd class="col-sm-8">$@Model.TotalPrice</dd>
-                    </dl>
-                </div>
-                
-                @if (vacationExists)
-                {
-                    <div class="col-md-6">
-                        <h5>Vacation Package</h5>
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="card-title">Booking Confirmed!</h2>
+                    </div>
+                    <div class="card-body">
+                        <h4>Booking Details</h4>
                         <dl class="row">
-                            <dt class="col-sm-4">Vacation</dt>
-                            <dd class="col-sm-8">@Model.Vacation.Name</dd>
+                            <dt class="col-sm-4">Booking ID:</dt>
+                            <dd class="col-sm-8">@Model.BookingID</dd>
                             
-                            @if (destinationExists)
-                            {
-                                <dt class="col-sm-4">City</dt>
-                                <dd class="col-sm-8">@Model.Vacation.Destination.City</dd>
-                                
-                                <dt class="col-sm-4">Country</dt>
-                                <dd class="col-sm-8">@Model.Vacation.Destination.Country</dd>
-                            }
+                            <dt class="col-sm-4">Vacation Package:</dt>
+                            <dd class="col-sm-8">@(Model.Vacation?.Name ?? "Package information unavailable")</dd>
                             
-                            @if (accommodationExists)
+                            <dt class="col-sm-4">Check-in Date:</dt>
+                            <dd class="col-sm-8">@Model.CheckInDate.ToShortDateString()</dd>
+                            
+                            <dt class="col-sm-4">Nights:</dt>
+                            <dd class="col-sm-8">@Model.NumberOfNights</dd>
+                            
+                            <dt class="col-sm-4">Guests:</dt>
+                            <dd class="col-sm-8">@Model.NumberOfGuests</dd>
+                            
+                            <dt class="col-sm-4">Total Price:</dt>
+                            <dd class="col-sm-8">$@Model.TotalPrice</dd>
+                            
+                            <dt class="col-sm-4">Booking Date:</dt>
+                            <dd class="col-sm-8">@Model.BookingDate.ToShortDateString()</dd>
+                            
+                            @if (!string.IsNullOrEmpty(Model.SpecialRequests))
                             {
-                                <dt class="col-sm-4">Package Type</dt>
-                                <dd class="col-sm-8">@Model.Vacation.Accommodation.RoomType</dd>
+                                <dt class="col-sm-4">Special Requests:</dt>
+                                <dd class="col-sm-8">@Model.SpecialRequests</dd>
                             }
                         </dl>
                     </div>
-                }
-            </div>
-            
-            @if (!string.IsNullOrEmpty(Model.SpecialRequests))
-            {
-                <div class="mt-3">
-                    <h5>Special Requests</h5>
-                    <p>@Model.SpecialRequests</p>
+                    <div class="card-footer">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                            Back to Home
+                        </a>
+                    </div>
                 </div>
-            }
-        </div>
-        <div class="card-footer">
-            <a asp-controller="Account" asp-action="Profile" class="btn btn-primary">View Your Bookings</a>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Return Home</a>
+            </div>
         </div>
     </div>
 }

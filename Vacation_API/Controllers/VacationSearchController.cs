@@ -41,13 +41,19 @@ namespace VacationBooking.Controllers
         {
             try
             {
+                // Make sure criteria is not null
+                if (criteria == null)
+                {
+                    criteria = new SearchCriteria();
+                }
+
                 // Start with base query including related entities
                 var query = _context.Vacations
                     .Include(v => v.Destination)
                     .Include(v => v.Accommodation)
                     .AsQueryable();
 
-                // Apply filters based on provided criteria
+                // Apply filters based on provided criteria - only if they have values
                 if (!string.IsNullOrEmpty(criteria.City))
                 {
                     query = query.Where(v => v.Destination.City.Contains(criteria.City));

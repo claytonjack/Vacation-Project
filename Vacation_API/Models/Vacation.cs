@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace VacationBooking.Models
 {
@@ -46,6 +47,7 @@ namespace VacationBooking.Models
         [ForeignKey("AccommodationID")]
         public virtual Accommodation? Accommodation { get; set; }
         
+				[JsonIgnore]
         public virtual ICollection<Booking> Bookings { get; set; } = new HashSet<Booking>();
     }
 }
