@@ -11,7 +11,7 @@ namespace VacationBooking.Controllers
 {
     /// <summary>
     /// Controller for managing vacation booking operations.
-    /// Principal Author: Hillary
+    /// Principal Author: Jack
     /// </summary>
     [Authorize]
     public class BookingController : Controller
@@ -115,10 +115,6 @@ namespace VacationBooking.Controllers
                     });
                 }
 
-                // Log all fields to help with debugging
-                Console.WriteLine($"Creating booking with: VacationID={vacationID}, UserID={user.Id}, " +
-                                  $"CheckInDate={checkInDate}, Nights={numberOfNights}, Guests={numberOfGuests}");
-                
                 // Create booking with only the required IDs, not the full objects
                 var booking = new Booking
                 {
@@ -141,7 +137,6 @@ namespace VacationBooking.Controllers
             catch (Exception ex)
             {
                 // More detailed error handling
-                Console.WriteLine($"Booking creation error: {ex.Message}");
                 
                 try
                 {
@@ -215,8 +210,6 @@ namespace VacationBooking.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Confirmation: {ex.Message}");
-                
                 // Create a more detailed error model - don't try to set ShowRequestId
                 return View("Error", new ErrorViewModel { 
                     RequestId = $"Failed to get booking details: {ex.Message}"

@@ -18,11 +18,7 @@ namespace VacationBooking.Services
         {
             _httpClient = httpClient;
             
-            // Make sure this is properly set from configuration
             _baseUrl = configuration["ApiSettings:BaseUrl"];
-            
-            // Add this line to Debug
-            Console.WriteLine($"API Base URL: {_baseUrl}");
             
             _jsonOptions = new JsonSerializerOptions
             {
@@ -154,18 +150,15 @@ namespace VacationBooking.Services
         {
             try 
             {
-                // Make sure criteria object is not null
                 if (criteria == null)
                     criteria = new SearchCriteria();
                     
-                // Ensure empty strings rather than nulls for string properties
                 criteria.City ??= string.Empty;
                 criteria.Country ??= string.Empty;
                 criteria.RoomType ??= string.Empty;
                 
                 var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/vacationsearch", criteria);
                 
-                // Handle specific response status
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
@@ -176,11 +169,9 @@ namespace VacationBooking.Services
                 
                 return await response.Content.ReadFromJsonAsync<List<Vacation>>(_jsonOptions);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log the exception
-                Console.WriteLine($"Error searching vacations: {ex.Message}");
-                throw; // Rethrow to be caught by the controller
+                throw;
             }
         }
 
@@ -209,7 +200,12 @@ namespace VacationBooking.Services
         public async Task DeleteVacationAsync(int id)
         {
             var response = await _httpClient.DeleteAsync($"{_baseUrl}/vacations/{id}");
-            response.EnsureSuccessStatusCode();
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception(errorContent);
+            }
         }
 
         public async Task<object> GetFilterOptionsAsync()
@@ -232,41 +228,10 @@ namespace VacationBooking.Services
 
         public async Task<Booking> GetBookingByIdAsync(int id)
         {
-            try {
-                var response = await _httpClient.GetAsync($"{GetApiUrl("bookings")}/{id}");
-                response.EnsureSuccessStatusCode();
-                
-                // For debugging - log the raw JSON
-                var jsonContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Booking API Response: {jsonContent}");
-                
-                return await response.Content.ReadFromJsonAsync<Booking>(_jsonOptions);
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Error getting booking {id}: {ex.Message}");
-                
-                // Try alternate approach - get booking without navigation properties
-                // In case the API is failing due to circular references or navigation property issues
-                var bookingResponse = await _httpClient.GetAsync($"{GetApiUrl("bookings")}/{id}?includeRelated=false");
-                
-                if (bookingResponse.IsSuccessStatusCode) {
-                    var booking = await bookingResponse.Content.ReadFromJsonAsync<Booking>(_jsonOptions);
-                    
-                    // Manually load the vacation if needed
-                    if (booking.VacationID > 0) {
-                        try {
-                            booking.Vacation = await GetVacationByIdAsync(booking.VacationID);
-                        }
-                        catch (Exception vacEx) {
-                            Console.WriteLine($"Failed to load vacation for booking: {vacEx.Message}");
-                        }
-                    }
-                    
-                    return booking;
-                }
-                
-                throw; // Re-throw if alternate approach also fails
-            }
+            var response = await _httpClient.GetAsync($"{GetApiUrl("bookings")}/{id}");
+            response.EnsureSuccessStatusCode();
+            
+            return await response.Content.ReadFromJsonAsync<Booking>(_jsonOptions);
         }
 
         public async Task<List<Booking>> GetUserBookingsAsync(string userId)
@@ -281,11 +246,9 @@ namespace VacationBooking.Services
         {
             try
             {
-                // Get the complete user and vacation objects
                 var user = await GetUserAsync(booking.UserID);
                 var vacation = await GetVacationByIdAsync(booking.VacationID);
                 
-                // Create a booking object with complete User and Vacation properties
                 var bookingData = new
                 {
                     UserID = booking.UserID,
@@ -295,7 +258,6 @@ namespace VacationBooking.Services
                     NumberOfGuests = booking.NumberOfGuests,
                     SpecialRequests = booking.SpecialRequests,
                     BookingDate = DateTime.Now,
-                    // Complete User object
                     User = new {
                         Id = user.Id,
                         FirstName = user.FirstName,
@@ -305,7 +267,6 @@ namespace VacationBooking.Services
                         UserName = user.UserName,
                         Email = user.Email
                     },
-                    // Complete Vacation object
                     Vacation = new {
                         VacationID = vacation.VacationID,
                         Name = vacation.Name,
@@ -318,23 +279,19 @@ namespace VacationBooking.Services
                 };
                 
                 var json = JsonSerializer.Serialize(bookingData);
-                Console.WriteLine($"Sending booking data: {json}");
-                
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(GetApiUrl("bookings"), content);
                 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Booking error response: {errorContent}");
                     throw new Exception($"Failed to create booking: {errorContent}");
                 }
                 
                 return await response.Content.ReadFromJsonAsync<Booking>(_jsonOptions);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception in CreateBookingAsync: {ex.Message}");
                 throw;
             }
         }
@@ -366,10 +323,6 @@ namespace VacationBooking.Services
             var response = await _httpClient.GetAsync($"{GetApiUrl("users")}/{id}");
             response.EnsureSuccessStatusCode();
             
-            // For debugging - log the raw JSON
-            var jsonContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"User API Response: {jsonContent}");
-            
             return await response.Content.ReadFromJsonAsync<User>(_jsonOptions);
         }
 
@@ -394,7 +347,6 @@ namespace VacationBooking.Services
         }
         #endregion
 
-        // Method to upload images through the API
         public async Task<string> UploadImageAsync(Stream imageStream, string fileName, string entityType, int entityId)
         {
             var content = new MultipartFormDataContent();
@@ -469,14 +421,12 @@ namespace VacationBooking.Services
 
         public async Task<bool> IsUserAdminAsync(ClaimsPrincipal userClaims)
         {
-            // First check the claims directly - faster than an API call
             var isAdminClaim = userClaims.FindFirstValue("IsAdmin");
             if (!string.IsNullOrEmpty(isAdminClaim) && bool.TryParse(isAdminClaim, out bool isAdmin))
             {
                 return isAdmin;
             }
             
-            // If not found in claims, check via user object from API
             var user = await GetCurrentUserAsync(userClaims);
             return user != null && user.IsAdmin;
         }

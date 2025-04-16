@@ -5,6 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using VacationBooking.Data;
 using VacationBooking.Models;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System;
 
 namespace VacationBooking.Controllers
 {
@@ -140,6 +143,57 @@ namespace VacationBooking.Controllers
         private bool AccommodationExists(int id)
         {
             return _context.Accommodations.Any(e => e.AccommodationID == id);
+        }
+
+        /// <summary>
+        /// Uploads an image for an accommodation
+        /// </summary>
+        /// <param name="id">The ID of the accommodation to update</param>
+        /// <param name="file">The image file to upload</param>
+        /// <returns>The URL of the uploaded image</returns>
+        [HttpPost("{id}/upload-image")]
+        public async Task<ActionResult<string>> UploadAccommodationImage(int id, IFormFile file)
+        {
+            var accommodation = await _context.Accommodations.FindAsync(id);
+            
+            if (accommodation == null)
+            {
+                return NotFound();
+            }
+            
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file was uploaded");
+            }
+            
+            try
+            {
+                // Save to the existing images/accommodation directory
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "images", "accommodation");
+                
+                // Generate unique filename
+                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                string filePath = Path.Combine(uploadsFolder, fileName);
+                
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+                
+                // Update accommodation with new image URL (relative path)
+                string imageUrl = $"/images/accommodation/{fileName}";
+                accommodation.ImageUrl = imageUrl;
+                
+                _context.Entry(accommodation).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                
+                return imageUrl;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error uploading image: {ex.Message}");
+            }
         }
     }
 }

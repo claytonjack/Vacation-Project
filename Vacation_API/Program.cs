@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 using VacationBooking.Data;
 using Microsoft.AspNetCore.Identity;
 using VacationBooking.Models;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace Vacation_API
 {
@@ -15,18 +17,19 @@ namespace Vacation_API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            });
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // Configure database context
             builder.Services.AddDbContext<VacationDbContext>(options =>
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Configure Identity with more options
             builder.Services.AddIdentity<User, IdentityRole>(options => {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -42,7 +45,6 @@ namespace Vacation_API
                 .AddEntityFrameworkStores<VacationDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Configure Session
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -51,7 +53,6 @@ namespace Vacation_API
                 options.Cookie.IsEssential = true;
             });
 
-            // Configure CORS with specific origins and credentials
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
@@ -59,13 +60,12 @@ namespace Vacation_API
                     policy.WithOrigins(builder.Configuration["AllowedOrigins"].Split(','))
                           .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowCredentials(); // Important for sending cookies
+                          .AllowCredentials();
                 });
             });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -77,10 +77,82 @@ namespace Vacation_API
             app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
+            
+            
+            var imagesPath = Path.Combine(app.Environment.ContentRootPath, "images");
+            Directory.CreateDirectory(imagesPath);
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(app.Environment.ContentRootPath, "images", "destination")),
+                RequestPath = "/images/destination"
+            });
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(app.Environment.ContentRootPath, "images", "vacation")),
+                RequestPath = "/images/vacation"
+            });
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(app.Environment.ContentRootPath, "images", "accommodation")),
+                RequestPath = "/images/accommodation"
+            });
+            
+            app.Use(async (context, next) => 
+            {
+                if (context.Request.Path.Value.Contains("/images/"))
+                {
+                    var filePath = Path.Combine(imagesPath, context.Request.Path.Value.Replace("/images/", "").Replace("/", Path.DirectorySeparatorChar.ToString()));
+                    Console.WriteLine($"Image request: {context.Request.Path}");
+                    Console.WriteLine($"Looking for file: {filePath}");
+                    Console.WriteLine($"File exists: {File.Exists(filePath)}");
+                }
+                await next();
+            });
+
+            app.Use(async (context, next) => 
+            {
+                if (context.Request.Path.Value.Contains("bcn-") || context.Request.Path.Value.Contains("barcelona-"))
+                {
+                    string physicalPath = Path.Combine(
+                        app.Environment.ContentRootPath, 
+                        "images", 
+                        context.Request.Path.Value.TrimStart('/').Replace("images/", ""));
+                    
+                    Console.WriteLine($"Barcelona image request: {context.Request.Path}");
+                    Console.WriteLine($"Physical path: {physicalPath}");
+                    Console.WriteLine($"File exists: {File.Exists(physicalPath)}");
+                    
+                    if (File.Exists(physicalPath))
+                    {
+                        var fileInfo = new FileInfo(physicalPath);
+                        Console.WriteLine($"File size: {fileInfo.Length} bytes");
+                        Console.WriteLine($"File last write: {fileInfo.LastWriteTime}");
+                    }
+                }
+                await next();
+            });
+
+            app.Use(async (context, next) =>
+            {
+                var originalPath = context.Request.Path;
+                
+                await next();
+                
+                if (context.Response.StatusCode == 404 && originalPath.Value.Contains("barcelona"))
+                {
+                    Console.WriteLine($"404 for: {originalPath}");
+                    Console.WriteLine($"Physical path would be: {Path.Combine(app.Environment.ContentRootPath, originalPath.Value.TrimStart('/'))}");
+                }
+            });
 
             app.MapControllers();
 
-            // Initialize database and seed data
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -92,7 +164,6 @@ namespace Vacation_API
                     
                     context.Database.EnsureCreated();
                     
-                    // Initialize roles
                     string[] roleNames = { "Admin", "User" };
                     foreach (var roleName in roleNames)
                     {

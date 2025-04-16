@@ -44,16 +44,12 @@ namespace VacationBooking.Controllers
         public async Task<IActionResult> Results(SearchCriteria criteria)
         {
             try {
-                // Add logging to see what's being sent
-                Console.WriteLine($"Searching with criteria: City={criteria.City}, Country={criteria.Country}, MaxPrice={criteria.MaxPricePerNight}");
-                
                 var results = await _apiService.SearchVacationsAsync(criteria);
                 
                 ViewBag.SearchCriteria = criteria;
                 return View(results);
             }
             catch (Exception ex) {
-                // Capture the full exception
                 return View("Error", new ErrorViewModel { 
                     RequestId = $"Failed to search vacations: {ex.Message}" 
                 });

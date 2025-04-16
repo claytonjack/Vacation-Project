@@ -11,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// Configure cookies for authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -40,7 +39,6 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 10 * 1024 * 1024;
 });
 
-// Register HttpClient for the VacationApiService
 builder.Services.AddHttpClient<IVacationApiService, VacationApiService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
@@ -51,7 +49,6 @@ builder.Services.AddHttpClient<IVacationApiService, VacationApiService>(client =
     AllowAutoRedirect = false
 });
 
-// Register the service as a scoped service
 builder.Services.AddScoped<IVacationApiService, VacationApiService>();
 
 var app = builder.Build();

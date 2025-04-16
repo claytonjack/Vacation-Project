@@ -7,14 +7,35 @@ using VacationBooking.Models;
 
 namespace VacationBooking.Controllers
 {
+    /// <summary>
+    /// Controller for managing user accounts and authentication in the vacation booking system.
+    /// Principal Author: Hillary
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AccountsController : ControllerBase
     {
+        /// <summary>
+        /// Manages user operations such as creation and authentication
+        /// </summary>
         private readonly UserManager<User> _userManager;
+        
+        /// <summary>
+        /// Manages user sign-in operations
+        /// </summary>
         private readonly SignInManager<User> _signInManager;
+        
+        /// <summary>
+        /// Manages role operations in the system
+        /// </summary>
         private readonly RoleManager<IdentityRole> _roleManager;
 
+        /// <summary>
+        /// Initializes a new instance of the AccountsController with the specified managers
+        /// </summary>
+        /// <param name="userManager">The user manager for user operations</param>
+        /// <param name="signInManager">The sign-in manager for authentication operations</param>
+        /// <param name="roleManager">The role manager for role operations</param>
         public AccountsController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
@@ -25,6 +46,11 @@ namespace VacationBooking.Controllers
             _roleManager = roleManager;
         }
 
+        /// <summary>
+        /// Registers a new user in the system
+        /// </summary>
+        /// <param name="model">The registration information</param>
+        /// <returns>Authentication response with user details if successful</returns>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest model)
         {
@@ -59,7 +85,6 @@ namespace VacationBooking.Controllers
             {
                 await _userManager.AddToRoleAsync(user, "User");
 
-                // Return user info
                 return Ok(new AuthResponse
                 {
                     Success = true,
@@ -79,6 +104,11 @@ namespace VacationBooking.Controllers
             });
         }
 
+        /// <summary>
+        /// Authenticates a user and creates a session
+        /// </summary>
+        /// <param name="model">The login credentials</param>
+        /// <returns>Authentication response with user details if successful</returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {
@@ -121,6 +151,10 @@ namespace VacationBooking.Controllers
             });
         }
         
+        /// <summary>
+        /// Signs out the currently logged in user
+        /// </summary>
+        /// <returns>Success response</returns>
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
@@ -128,6 +162,11 @@ namespace VacationBooking.Controllers
             return Ok(new { Success = true });
         }
         
+        /// <summary>
+        /// Gets a user's profile information by ID
+        /// </summary>
+        /// <param name="id">The ID of the user to retrieve</param>
+        /// <returns>The user's profile information if found</returns>
         [HttpGet("user/{id}")]
         public async Task<IActionResult> GetUser(string id)
         {

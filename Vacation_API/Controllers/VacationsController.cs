@@ -5,6 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using VacationBooking.Data;
 using VacationBooking.Models;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System;
 
 namespace VacationBooking.Controllers
 {
@@ -225,6 +228,51 @@ namespace VacationBooking.Controllers
         private bool VacationExists(int id)
         {
             return _context.Vacations.Any(e => e.VacationID == id);
+        }
+
+        [HttpPost("{id}/upload-image")]
+        public async Task<ActionResult<string>> UploadVacationImage(int id, IFormFile file)
+        {
+            var vacation = await _context.Vacations.FindAsync(id);
+            
+            if (vacation == null)
+            {
+                return NotFound();
+            }
+            
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file was uploaded");
+            }
+            
+            try
+            {
+                // Save to the existing images/vacation directory
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "images", "vacation");
+                
+                // Generate unique filename
+                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                string filePath = Path.Combine(uploadsFolder, fileName);
+                
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+                
+                // Update vacation with new image URL
+                string imageUrl = $"/images/vacation/{fileName}";
+                vacation.ImageUrl = imageUrl;
+                
+                _context.Entry(vacation).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                
+                return imageUrl;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error uploading image: {ex.Message}");
+            }
         }
     }
 }

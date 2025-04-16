@@ -21,6 +21,10 @@
                     {
                         <img src="@Model.Vacation.Destination.ImageUrl" class="img-fluid rounded mb-3" alt="@Model.Vacation.Destination.City">
                     }
+                    else if (Model.Vacation.Accommodation != null && !string.IsNullOrEmpty(Model.Vacation.Accommodation.ImageUrl))
+                    {
+                        <img src="@Model.Vacation.Accommodation.ImageUrl" class="img-fluid rounded mb-3" alt="@Model.Vacation.Accommodation.HotelName">
+                    }
                 </div>
                 
                 <dl class="row info-list">
@@ -109,7 +113,6 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
     <script>
-        // Calculate and display total price dynamically
         $(document).ready(function() {
             const pricePerNight = @Html.Raw(Json.Serialize(Model.Vacation.PricePerNight));
             
@@ -132,7 +135,7 @@
             }
             
             $("#NumberOfNights").on("change input", updateTotalPrice);
-            updateTotalPrice(); // Initial calculation
+            updateTotalPrice();
         });
     </script>
 } 

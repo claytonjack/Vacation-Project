@@ -91,7 +91,7 @@ namespace VacationBooking.Controllers
         /// <author>Hillary</author>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Vacation vacation, IFormFile vacationImage, IFormFile destinationImage, IFormFile accommodationImage)
+        public async Task<IActionResult> Create(Vacation vacation, IFormFile vacationImage)
         {
             if (!await IsUserAdmin())
             {
@@ -102,8 +102,6 @@ namespace VacationBooking.Controllers
             ModelState.Remove("Accommodation");
             ModelState.Remove("Bookings");
             ModelState.Remove("vacationImage");
-            ModelState.Remove("destinationImage");
-            ModelState.Remove("accommodationImage");
 
             if (vacation.DestinationID <= 0)
             {
@@ -119,12 +117,23 @@ namespace VacationBooking.Controllers
             {
                 try
                 {
+                    // First create the vacation without an image
+                    var createdVacation = await _apiService.CreateVacationAsync(vacation);
+                    
+                    // If an image was provided, upload it
                     if (vacationImage != null && vacationImage.Length > 0)
                     {
-                        vacation.ImageUrl = SaveImage(vacationImage, "vacations");
+                        using (var stream = vacationImage.OpenReadStream())
+                        {
+                            string imageUrl = await _apiService.UploadImageAsync(
+                                stream, 
+                                vacationImage.FileName, 
+                                "vacations", 
+                                createdVacation.VacationID);
+                            
+                            // The API has already saved the image URL to the vacation
+                        }
                     }
-
-                    var createdVacation = await _apiService.CreateVacationAsync(vacation);
                     
                     TempData["Message"] = $"Vacation package '{vacation.Name}' was created successfully.";
                     return RedirectToAction("Dashboard");
@@ -214,7 +223,11 @@ namespace VacationBooking.Controllers
                 {
                     if (photoFile != null && photoFile.Length > 0)
                     {
-                        vacation.ImageUrl = SaveImage(photoFile, "vacations");
+                        vacation.ImageUrl = await _apiService.UploadImageAsync(
+                            photoFile.OpenReadStream(), 
+                            photoFile.FileName, 
+                            "vacations", 
+                            id);
                     }
                     else if (deleteVacationImage)
                     {
@@ -292,12 +305,28 @@ namespace VacationBooking.Controllers
             try
             {
                 await _apiService.DeleteVacationAsync(id);
+                TempData["Message"] = "Vacation deleted successfully.";
                 return RedirectToAction("Dashboard");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Error deleting vacation: {ex.Message}";
-                return RedirectToAction("Dashboard");
+                // Set error message for the Delete view
+                ViewBag.ErrorMessage = ex.Message.Contains("existing bookings") 
+                    ? "Cannot delete this vacation as it has existing bookings. Cancel all bookings first."
+                    : $"Error deleting vacation: {ex.Message}";
+
+                // Fetch the vacation again to display on the page
+                try
+                {
+                    var vacation = await _apiService.GetVacationByIdAsync(id);
+                    return View(vacation);
+                }
+                catch
+                {
+                    // If we can't fetch the vacation, redirect to dashboard with error
+                    TempData["ErrorMessage"] = "Error deleting vacation and could not reload the vacation details.";
+                    return RedirectToAction("Dashboard");
+                }
             }
         }
 
@@ -358,7 +387,12 @@ namespace VacationBooking.Controllers
 
                 if (photoFile != null && photoFile.Length > 0)
                 {
-                    vacation.ImageUrl = SaveImage(photoFile, "vacations");
+                    vacation.ImageUrl = await _apiService.UploadImageAsync(
+                        photoFile.OpenReadStream(), 
+                        photoFile.FileName, 
+                        "vacations", 
+                        vacationId);
+                    
                     await _apiService.UpdateVacationAsync(vacationId, vacation);
                     
                     TempData["Message"] = "Photo added successfully.";
@@ -427,40 +461,6 @@ namespace VacationBooking.Controllers
         private async Task<bool> IsUserAdmin()
         {
             return await _apiService.IsUserAdminAsync(User);
-        }
-
-        /// <summary>
-        /// Saves an image file to the server
-        /// </summary>
-        /// <param name="file">The image file to save</param>
-        /// <param name="folderName">The folder to save the image in</param>
-        /// <returns>The URL path to the saved image</returns>
-        /// <author>Jack</author>
-        private string SaveImage(IFormFile file, string folderName)
-        {
-            if (file != null && file.Length > 0)
-            {
-                if (file.ContentType.StartsWith("image/"))
-                {
-                    string fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-                    
-                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", folderName);
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
-                    
-                    string filePath = Path.Combine(uploadsFolder, fileName);
-                    
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        file.CopyTo(stream);
-                    }
-                    
-                    return $"/images/{folderName}/{fileName}";
-                }
-            }
-            return null;
         }
     }
 }

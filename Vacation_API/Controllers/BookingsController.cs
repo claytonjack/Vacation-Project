@@ -11,7 +11,7 @@ namespace VacationBooking.Controllers
 {
     /// <summary>
     /// Controller for managing booking operations in the vacation booking system.
-    /// Principal Author: Hillary
+    /// Principal Author: Jack
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
@@ -104,14 +104,12 @@ namespace VacationBooking.Controllers
                 return BadRequest("Check-in date cannot be in the past");
             }
 
-            // Check if user exists
             var user = await _context.Users.FindAsync(booking.UserID);
             if (user == null)
             {
                 return BadRequest("Invalid User ID");
             }
 
-            // Check if vacation exists and calculate total price
             var vacation = await _context.Vacations.FindAsync(booking.VacationID);
             if (vacation == null)
             {
@@ -120,33 +118,12 @@ namespace VacationBooking.Controllers
 
             booking.TotalPrice = vacation.PricePerNight * booking.NumberOfNights;
             booking.BookingDate = DateTime.Now;
-
-            // Disable validation for this operation
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
             
-            try
-            {
-                _context.Bookings.Add(booking);
-                await _context.SaveChangesAsync();
-            
-                // Return a simplified booking without circular references
-                return CreatedAtAction("GetBooking", new { id = booking.BookingID }, new
-                {
-                    booking.BookingID,
-                    booking.UserID,
-                    booking.VacationID,
-                    booking.CheckInDate,
-                    booking.NumberOfNights,
-                    booking.NumberOfGuests,
-                    booking.TotalPrice,
-                    booking.BookingDate,
-                    booking.SpecialRequests
-                });
-            }
-            finally
-            {
-                _context.ChangeTracker.AutoDetectChangesEnabled = true;
-            }
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
+        
+            // Return the booking object instead of an anonymous object
+            return CreatedAtAction("GetBooking", new { id = booking.BookingID }, booking);
         }
 
         /// <summary>

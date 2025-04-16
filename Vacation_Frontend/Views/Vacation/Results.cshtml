@@ -23,7 +23,7 @@ else
         {
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
-                    <img src="@(item.Destination?.ImageUrl ?? "/images/placeholder.jpg")" class="card-img-top" alt="@item.Destination?.City">
+                    <img src="@(item.ImageUrl ?? item.Destination?.ImageUrl ?? "/images/placeholder.jpg")" class="card-img-top" alt="@item.Name">
                     <div class="card-body">
                         <h5 class="card-title">@item.Name</h5>
                         <h6 class="card-subtitle mb-2 text-muted">@item.Destination.City</h6>
